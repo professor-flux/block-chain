@@ -1,0 +1,10 @@
+[package]
+name = "test_pro"
+version = "0.1.0"
+authors = ["professor_flux <sauravrax02@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+protocol = { path = "../protocol" , version = "0.1.0"}
