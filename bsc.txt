@@ -1,0 +1,51 @@
+
+running 1 test
+Block {
+	index: 0,
+	previous hash: "0000000000000000000000000000000000000000000000000000000000000000",
+	nonce: 0,
+	data: "Genesis Block",
+	time: 2021-06-23 07:13:05.619277454 UTC
+}
+hash: "cd773a72f88409005e1c3161dc8f1e8c7fad3b88f1e44d8de8afd88c1e433ae9"
+
+Block {
+	index: 1,
+	previous hash: "cd773a72f88409005e1c3161dc8f1e8c7fad3b88f1e44d8de8afd88c1e433ae9",
+	nonce: 688,
+	data: "Block Data 1",
+	time: 2021-06-23 07:13:05.619284043 UTC
+}
+hash: "000764bc86a2dfb7c32437dc0e0159a2104ccc096d0bbb7175c1025919c02358"
+
+Block {
+	index: 2,
+	previous hash: "000764bc86a2dfb7c32437dc0e0159a2104ccc096d0bbb7175c1025919c02358",
+	nonce: 3936,
+	data: "Block Data 2",
+	time: 2021-06-23 07:13:05.623656792 UTC
+}
+hash: "00077e08721b0cee3e1347dfbfac08bcd002cdcb21086ed559edc3d89389ac03"
+
+Block {
+	index: 3,
+	previous hash: "00077e08721b0cee3e1347dfbfac08bcd002cdcb21086ed559edc3d89389ac03",
+	nonce: 924,
+	data: "Block Data 3",
+	time: 2021-06-23 07:13:05.650793739 UTC
+}
+hash: "00098802e90ee5d9d0e52034005aa02cab4329b277ac4ae2afa08e4fa153ce2d"
+
+Block {
+	index: 4,
+	previous hash: "00098802e90ee5d9d0e52034005aa02cab4329b277ac4ae2afa08e4fa153ce2d",
+	nonce: 2614,
+	data: "Block Data 4",
+	time: 2021-06-23 07:13:05.656196571 UTC
+}
+hash: "0004180d4eafb1324538a00d8e31c1982219d891d9e3bcbe3997f104bf997e9d"
+
+test blockchain::test_blockchain ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.05s
+
