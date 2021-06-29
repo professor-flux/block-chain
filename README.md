@@ -1,6 +1,6 @@
 # block-chain
 
-### A simple and naive implementation of bitcoin (BlockChain and protocol) in [Rust][https://www.rust-lang.org/]
+### A simple and naive implementation of bitcoin (BlockChain and protocol) in [Rust](https://www.rust-lang.org)
 
 #### Transaction 
 A Transaction consists of owner's public-key, reciver's public-key, and input source of a coin, and digital signature.
@@ -14,3 +14,5 @@ A Block consists of previous block hash, number of transaction, and list of tran
 
 #### Ledger
 A Ledger is a list of block linked with perivous block by having it hash.
+
+![ledger](https://drive.google.com/uc?export=view&id=1h6CHLbpi7yeCfLZr5fUeAWyqyEuPkwRc)
