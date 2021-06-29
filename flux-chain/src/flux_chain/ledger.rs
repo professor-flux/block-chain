@@ -1,29 +1,14 @@
-use super::types::*;
+use super::{Block, BlockHash, PubKey, Transaction};
 
-use super::{block::Block, transaction::Transaction};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Ledger {
-    _block_size: usize,
     difficulty: usize,
     chain: Vec<Block>,
 }
 
 impl Ledger {
-    pub fn new(genesis_block_owner: PubKey, difficulty: usize, block_size: usize) -> Self {
-        let mut list = vec![];
-        for i in 0..block_size {
-            list.push(Transaction::genesis_transaction(
-                genesis_block_owner.clone(),
-                i.to_string(),
-            ));
-        }
-
-        Self {
-            _block_size: block_size,
-            difficulty,
-            chain: vec![Block::new(list)],
-        }
-    }
-
     pub fn difficulty(&self) -> usize {
         self.difficulty
     }
@@ -32,7 +17,23 @@ impl Ledger {
         &self.chain
     }
 
-    pub fn push_block(&mut self, block: Block) {
+    pub fn add_block(&mut self, list: Vec<Transaction>, miner: PubKey) -> Result<(), ()> {
+        let hash = if let Some(last) = self.chain.last() {
+            last.hash()
+        } else {
+            BlockHash::new()
+        };
+        let mut block = Block::new(list, hash, miner);
+        block.mine(self.difficulty);
         self.chain.push(block);
+        Ok(())
+    }
+
+    pub fn to_string(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(self)
+    }
+
+    pub fn from_string(s: &str) -> Result<Ledger, serde_json::Error> {
+        serde_json::from_str(s)
     }
 }

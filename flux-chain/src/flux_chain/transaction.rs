@@ -13,19 +13,17 @@ pub struct Transaction {
 
 impl Transaction {
     fn fromat_transaction_for_signing(&self) -> String {
-        serde_json::to_string_pretty(self).unwrap()
+        format!("{}\n{}\n{}", self.from, self.to, self.from)
+    }
+
+    fn calculate_hash(&self) -> BlockHash {
+        use openssl::sha;
+        let fmt_transaction = self.fromat_transaction_for_signing();
+        hex::encode(sha::sha256(fmt_transaction.as_bytes()))
     }
 }
 
 impl Transaction {
-    pub fn genesis_transaction(to: PubKey, input: TransactionHash) -> Self {
-        Self {
-            from: PubKey::new(),
-            to,
-            input,
-            signature: Signature::new(),
-        }
-    }
     pub fn make_transaction(from: PrvKey, to: PubKey, input: TransactionHash) -> Self {
         use openssl::hash::MessageDigest;
         use openssl::sign::Signer;
@@ -67,7 +65,7 @@ impl Transaction {
     }
 
     pub fn hash(&self) -> TransactionHash {
-        self.signature.clone()
+        self.calculate_hash()
     }
 
     pub fn verify_signature(&self) -> bool {

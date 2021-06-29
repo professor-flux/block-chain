@@ -1,38 +1,28 @@
 use super::types::*;
 
-use super::{ledger::Ledger, transaction::Transaction};
+use super::{Ledger, Transaction};
 
-pub fn verify_ledger(ledger: &Ledger) -> bool {
+pub fn verify_ledger(ledger: &Ledger) -> Option<Wallet> {
     let mut wallet = Wallet::new();
 
     let mut previous_hash = BlockHash::new();
-    if let Some(genesis_block) = ledger.get_chain().first() {
-        for genesis_transaction in genesis_block.transaction_list() {
-            wallet
-                .entry(genesis_transaction.owner_public_key().clone())
-                .or_default()
-                .insert(genesis_transaction.hash());
-        }
-    } else {
-        return false;
-    }
 
     for block in ledger.get_chain() {
         if *block.previous_block_hash() != previous_hash {
-            return false;
+            return None;
         }
         if !block.verify_nonce(ledger.difficulty()) {
-            return false;
+            return None;
         }
 
         for transaction in block.transaction_list() {
             if !transaction.verify_signature() {
-                return false;
+                return None;
             }
 
             if let Some(coins) = wallet.get_mut(transaction.owner_public_key()) {
                 if !coins.contains(transaction.previous_transaction_hash()) {
-                    return false;
+                    return None;
                 }
                 coins.remove(transaction.previous_transaction_hash());
 
@@ -41,40 +31,36 @@ pub fn verify_ledger(ledger: &Ledger) -> bool {
                     .or_default()
                     .insert(transaction.hash());
             } else {
-                return false;
+                return None;
             }
         }
 
+        wallet
+            .entry(block.miner().clone())
+            .or_default()
+            .insert(block.hash());
+
         previous_hash = block.hash();
     }
-    true
+    Some(wallet)
 }
 
-use std::collections::HashSet;
-pub fn verify_transaction(
-    transaction: &Transaction,
-    free_coins: &HashSet<TransactionHash>,
-) -> bool {
+pub fn verify_transaction(transaction: &Transaction, wallet: &Wallet) -> bool {
     if transaction.verify_signature() {
-        free_coins.contains(transaction.previous_transaction_hash())
+        match wallet.get(transaction.owner_public_key()) {
+            Some(owner_wallet) => owner_wallet.contains(transaction.previous_transaction_hash()),
+            None => false,
+        }
     } else {
         false
     }
 }
 
-pub fn get_balance(ledger: &Ledger, pub_key: &PubKey) -> Coin {
-    let mut balance: Coin = 0;
-    for block in ledger.get_chain() {
-        for transaction in block.transaction_list() {
-            if transaction.owner_public_key() == pub_key {
-                balance -= 1;
-            }
-            if transaction.reciver_public_key() == pub_key {
-                balance += 1;
-            }
-        }
+pub fn get_balance(wallet: &Wallet, pub_key: &PubKey) -> Coin {
+    match wallet.get(pub_key) {
+        Some(user_wallet) => user_wallet.len() as Coin,
+        None => 0,
     }
-    balance
 }
 
 pub fn generate_wallet(ledger: &Ledger) -> Result<Wallet, ()> {
@@ -92,6 +78,11 @@ pub fn generate_wallet(ledger: &Ledger) -> Result<Wallet, ()> {
                 .or_default()
                 .insert(transaction.hash());
         }
+
+        wallet
+            .entry(block.miner().clone())
+            .or_default()
+            .insert(block.hash());
     }
 
     Ok(wallet)
@@ -111,7 +102,7 @@ pub fn generate_key() -> PrvKey {
     PrvKey::from_utf8(key.private_key_to_pem_pkcs8().unwrap()).unwrap()
 }
 
-pub fn prv_key_to_pub_key(prv_key: &PrvKey) -> PubKey {
+pub fn prvkey_to_pubkey(prv_key: &PrvKey) -> PubKey {
     use openssl::pkey::PKey;
     let key = PKey::private_key_from_pem(prv_key.as_bytes()).unwrap();
     String::from_utf8(key.public_key_to_pem().unwrap()).unwrap()
@@ -121,9 +112,8 @@ pub fn generate_transaction(
     wallet: &Wallet,
     owner: PrvKey,
     reciver: PubKey,
-    _coins: Coin,
 ) -> Option<Transaction> {
-    let owner_pubkey = prv_key_to_pub_key(&owner);
+    let owner_pubkey = prvkey_to_pubkey(&owner);
 
     if let Some(free_coins) = wallet.get(&owner_pubkey) {
         if let Some(input) = free_coins.iter().next() {

@@ -1,13 +1,15 @@
-use super::transaction::Transaction;
 use super::types::*;
+use super::Transaction;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     pervious_block: BlockHash,
     nonce: u64,
+    block_size: usize,
     transaction_list: Vec<Transaction>,
+    miner: PubKey,
 }
 
 impl Block {
@@ -23,19 +25,18 @@ impl Block {
 }
 
 impl Block {
-    pub fn new(list: Vec<Transaction>) -> Self {
+    pub fn new(list: Vec<Transaction>, pervious_block: BlockHash, miner: PubKey) -> Self {
         Self {
-            pervious_block: BlockHash::new(),
+            pervious_block,
             nonce: 0,
+            block_size: list.len(),
             transaction_list: list,
+            miner: miner,
         }
     }
 
     pub fn previous_block_hash(&self) -> &BlockHash {
         &self.pervious_block
-    }
-    pub fn set_previous_block_hash(&mut self, link: BlockHash) {
-        self.pervious_block = link;
     }
 
     pub fn mine(&mut self, difficulty: usize) {
@@ -64,5 +65,9 @@ impl Block {
 
     pub fn transaction_list(&self) -> &[Transaction] {
         &self.transaction_list
+    }
+
+    pub fn miner(&self) -> &PubKey {
+        &self.miner
     }
 }
